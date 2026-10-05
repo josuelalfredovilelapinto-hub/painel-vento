@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsão de Ventos Fortes - UFFS Laranjeiras do Sul</title>
+    <style>
+        :root {
+            --bg-body: #090d16;
+            --bg-card: #111827;
+            --text-main: #f3f4f6;
+            --primary: #0ea5e9;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --bg-dark: #030712;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 650px;
+            width: 100%;
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1f2937;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; color: var(--primary); letter-spacing: 0.5px; }
+        .sub-header { font-size: 0.85rem; color: #9ca3af; margin-top: 5px; }
+        
+        .status-badge { 
+            display: inline-block;
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            margin-top: 8px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+        .online { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .offline { background: rgba(239, 68, 68, 0.1); color: var(--warning); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            text-align: center;
+        }
+
+        .card-label { font-size: 0.8rem; color: #9ca3af; font-weight: 600; }
+        .card-value { font-size: 1.8rem; font-weight: bold; margin-top: 5px; color: #fff; }
+
+        button {
+            width: 100%;
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.2s;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        button:hover { background: #0369a1; }
+
+        .alert-box {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            margin-top: 20px;
+            border: 1px solid transparent;
+        }
+
+        .safe { background: rgba(34, 197, 94, 0.08); border-color: var(--success); color: var(--success); }
+        .warning { background: rgba(234, 179, 8, 0.08); border-color: var(--warning); color: var(--warning); }
+        .danger { background: rgba(239, 68, 68, 0.08); border-color: var(--danger); color: var(--danger); }
+
+        .index-display { font-size: 2.8rem; font-weight: 800; margin: 10px 0; }
+
+        /* Gráfico Dinâmico Estruturado em CSS Nativo */
+        .chart-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+        }
+        .chart-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #9ca3af;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .bar-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 120px;
+            padding-top: 20px;
+            border-bottom: 2px solid #334155;
+        }
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70px;
+        }
+        .bar-live {
+            width: 25px;
+            background: linear-gradient(to top, #0284c7, #38bdf8);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.5s ease;
+        }
+        .bar-live-rajada {
+            background: linear-gradient(to top, #dc2626, #f87171) !important;
+        }
+        .bar-value-label { font-size: 0.75rem; color: #fff; margin-bottom: 4px; font-weight: bold; }
+        .bar-time-label { font-size: 0.7rem; color: #64748b; margin-top: 6px; }
+
+        /* Seção do Memorial de Cálculo Nativo */
+        details.memorial-section {
+            margin-top: 25px;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        summary.memorial-header {
+            background: #1f2937;
+            padding: 14px 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            outline: none;
+            list-style: none;
+        }
+        
+        summary.memorial-header::-webkit-details-marker { display: none; }
+
+        .memorial-content {
+            padding: 15px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #d1d5db;
+            border-top: 1px solid #1f2937;
+        }
+
+        .formula-box {
+            background: #111827;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--primary);
+            margin: 10px 0;
+            overflow-x: auto;
+            border-left: 3px solid var(--primary);
+        }
+
+        .variable-list { margin: 10px 0; padding-left: 20px; }
+        .variable-list li { margin-bottom: 5px; }
+        .value-highlight { color: #fff; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>UFFS Laranjeiras do Sul • Analisador de Vento</h1>
+        <div class="sub-header">Painel Analítico Operado em Tempo Real por Satélite Regional</div>
+        <div id="statusBadge" class="status-badge online">Buscando Clima...</div>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-label">室 🌡️ Temperatura Local</div>
+            <div id="temp" class="card-value">--.- °C</div>
+        </div>
+        <div class="card">
+            <div class="card-label">💧 Umidade do Ar</div>
+            <div id="ur" class="card-value">-- %</div>
+        </div>
+        <div class="card">
+            <div class="card-label">降低 📉 Pressão Atmosférica</div>
+            <div id="pressao" class="card-value">---- hPa</div>
+        </div>
+        <div class="card">
+            <div class="card-label">💨 Velocidade do Vento</div>
+            <div id="vento" class="card-value">-- km/h</div>
+        </div>
+        <div class="card" style="grid-column: span 2;">
+            <div class="card-label">⚡ Rajada de Vento Estimada</div>
+            <div id="rajada" class="card-value">-- km/h</div>
+        </div>
+    </div>
+
+    <button onclick="buscarDadosMeteorologicosDireto()">Atualizar Medições Agora</button>
+
+    <div id="alertArea" class="alert-box safe" style="display: none;">
+        <div style="font-size: 0.85rem; letter-spacing: 1px; font-weight: bold;">ÍNDICE MATEMÁTICO DE RISCO (I_VF)</div>
+        <div id="indexValue" class="index-display">0%</div>
+        <div id="indexDesc">Processando variáveis atmosféricas...</div>
+    </div>
+
+    <!-- Gráfico de Fluxo de Vento Nativo CSS -->
+    <div class="chart-section">
+        <div class="chart-title">📊 Histórico de Ventos Calculados (km/h)</div>
+        <div id="containerBarras" class="bar-container">
+            <div style="color:#475569; font-size:0.8rem;">Aguardando leitura para desenhar o gráfico...</div>
+        </div>
+    </div>
+
+    <!-- Seção do Memorial de Cálculo Nativo Baseada em Details HTML -->
+    <details class="memorial-section">
+        <summary class="memorial-header">
+            <span>🧮 Memorial de Cálculo Matemático</span>
+            <span id="memorialIcon">▼</span>
+        </summary>
+        <div class="memorial-content">
+            <p>O <strong>Índice de Vento Forte (I<sub>vf</sub>)</strong> mede o estresse mecânico na área calculando variações cinéticas e barométricas locais.</p>
+            <div class="formula-box">
+                I_vf = (Vento * 1.1) + (Δ_Rajada * 1.8) + (|ΔP| * 30) + (|ΔT| * 10)
+            </div>
+            <strong>Variáveis Utilizadas no Cálculo Atual:</strong>
+            <ul class="variable-list">
+                <li><strong>Vento Base:</strong> <span id="m_vento" class="value-highlight">--</span> km/h</li>
+                <li><strong>Δ_Rajada (Pico):</strong> <span id="m_rajada" class="value-highlight">--</span> km/h</li>
+                <li><strong>|ΔP| (Variação Pressão):</strong> <span id="m_deltaP" class="value-highlight">--</span> hPa</li>
+                <li><strong>|ΔT| (Variação Temp):</strong> <span id="m_deltaT" class="value-highlight">--</span> °C</li>
+            </ul>
+            <div id="m_resolucao" class="formula-box" style="color: var(--success); border-left-color: var(--success);">
+                Carregando variáveis reais...
+            </div>
+        </div>
+    </details>
+</div>
+
+<script>
+// Altera dinamicamente a seta do details nativo ao abrir ou fechar
+document.querySelector('details').addEventListener('toggle', function() {
